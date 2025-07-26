@@ -1,0 +1,33 @@
+# macOS
+.DS_Store
+
+# VSCode
+.vscode/
+
+# Logs
+*.log
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDEs
+.idea/
+*.swp
+
+# OS generated files
+Thumbs.db
+Desktop.ini
+
+# Others
+*.bak
+*.tmp
+
+# Go
+bin/
+*.exe
+*.test
+*.out
+vendor/
+coverage.out
