@@ -1,0 +1,96 @@
+openapi: "3.0"
+info:
+  title: Sample User API
+  description: ユーザーの取得・作成ができるAPIのサンプル
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3000/api
+    description: ローカル開発環境
+
+paths:
+  /users:
+    get:
+      summary: ユーザー一覧を取得
+      tags:
+        - Users
+      responses:
+        "200":
+          description: ユーザー一覧の取得成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+    post:
+      summary: 新しいユーザーを作成
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewUser"
+      responses:
+        "201":
+          description: ユーザーの作成成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: 不正なリクエスト
+
+  /users/{id}:
+    get:
+      summary: 特定のユーザーを取得
+      tags:
+        - Users
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ユーザーID
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: ユーザー情報の取得成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "404":
+          description: ユーザーが見つからない
+
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: 山田 太郎
+        email:
+          type: string
+          format: email
+          example: yamada@example.com
+
+    NewUser:
+      type: object
+      required:
+        - name
+        - email
+      properties:
+        name:
+          type: string
+          example: 田中 花子
+        email:
+          type: string
+          format: email
+          example: tanaka@example.com
