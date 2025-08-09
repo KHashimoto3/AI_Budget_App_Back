@@ -20,3 +20,11 @@ npm install -g @redocly/cli
 cd open-api
 openapi preview
 ```
+
+## 起動方法
+
+起動コマンド
+
+```
+go run main.go serve
+```
