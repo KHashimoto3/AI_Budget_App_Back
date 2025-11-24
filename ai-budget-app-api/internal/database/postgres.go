@@ -2,7 +2,10 @@ package database
 
 import (
 	"database/sql"
+	"fmt"
+	"net/url"
 	"os"
+	"strconv"
 
 	_ "github.com/lib/pq"
 )
@@ -14,17 +17,33 @@ func ConnectDB() (*sql.DB, error) {
 	password := os.Getenv("DB_PASSWORD")
 	dbname := os.Getenv("DB_NAME")
 
-	dbConnStr := "host=" + host + " port=" + port + " user=" + user + " password=" + password + " dbname=" + dbname
+	// 必須環境変数の確認
+	if host == "" || port == "" || user == "" || password == "" || dbname == "" {
+		return nil, fmt.Errorf("データベース接続情報が環境変数に設定されていません")
+	}
+
+	// port番号が数字であることを確認
+	portNum, err := strconv.Atoi(port)
+	if err != nil || portNum <= 0 || portNum > 65535 {
+		return nil, fmt.Errorf("無効なポート番号が指定されています: %s", port)
+	}
+
+	// パスワードをエスケープ
+	encodedPassword := url.QueryEscape(password)
+
+	// 接続文字列構築
+	dbConnStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=require",
+        host, port, user, encodedPassword, dbname)
 
 	db, err := sql.Open("postgres", dbConnStr)
 
 	// 接続エラーの場合
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("データベース接続時にエラーが発生しました: %v", err)
 	}
 
 	if err = db.Ping(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("データベースへのpingに失敗しました: %v", err)
 	}
 
 	return db, nil
