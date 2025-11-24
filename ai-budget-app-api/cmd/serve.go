@@ -3,6 +3,8 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/KHashimoto3/AI_Budget_App_Back/ai-budget-app-api/internal/database"
+	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
@@ -16,9 +18,28 @@ var serveCmd = &cobra.Command{
 	Short: "Start API server",
 	Long:  `The serve command starts the API server for the AI Budget App with Echo`,
 	Run: func(cmd *cobra.Command, args []string) {
+		// 環境変数設定ファイルみ込み
+		if err := godotenv.Load(); err != nil {
+			fmt.Printf("Error: 環境変数ファイルを読み込めません %v\n", err)
+			return
+		}
+
+		// DB接続確認
+		db, err := database.ConnectDB()
+		if err != nil {
+			fmt.Printf("Error: データベースに接続できません %v\n", err)
+			return
+		}
+		// 終了時にDB接続を閉じる
+		defer db.Close()
+
+		// DB接続成功メッセージ
+		fmt.Println("DB接続に成功しました")
+
+		// echoサーバー起動
 		e := echo.New()
 
-		// Set log level
+		// ログレベルの設定
 		switch logLevel {
 		case "debug":
 			e.Logger.SetLevel(log.DEBUG)
