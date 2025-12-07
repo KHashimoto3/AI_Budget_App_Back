@@ -1,0 +1,52 @@
+# Git関連
+.git
+.gitignore
+.gitattributes
+
+# 環境変数ファイル（セキュリティのため除外）
+.env
+.env.local
+.env.*.local
+
+# ビルド成果物
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+main
+
+# テストキャッシュ
+*.test
+*.out
+
+# ビルドキャッシュ
+vendor/
+
+# IDE設定
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS生成ファイル
+.DS_Store
+Thumbs.db
+
+# ログファイル
+*.log
+
+# ドキュメント
+README.md
+LICENSE
+*.md
+
+# Docker関連
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# その他
+tmp/
+temp/

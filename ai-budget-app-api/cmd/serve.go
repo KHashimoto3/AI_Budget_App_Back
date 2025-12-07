@@ -18,10 +18,10 @@ var serveCmd = &cobra.Command{
 	Short: "Start API server",
 	Long:  `The serve command starts the API server for the AI Budget App with Echo`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// 環境変数設定ファイルみ込み
+		// 環境変数設定ファイル読み込み（ファイルがない場合はスキップ）
 		if err := godotenv.Load(); err != nil {
-			fmt.Printf("Error: 環境変数ファイルを読み込めません %v\n", err)
-			return
+			// Docker環境などで.envファイルがない場合は、環境変数から直接読み込むためエラーとしない
+			fmt.Printf("Warning: .envファイルが見つかりません。環境変数から直接読み込みます。\n")
 		}
 
 		// DB接続確認
