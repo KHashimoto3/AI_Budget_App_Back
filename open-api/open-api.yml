@@ -11,7 +11,7 @@ servers:
 paths:
   /expenses/list:
     get:
-      summary: 支出一覧を取得
+      summary: 支出一覧取得API
       description: 指定された月のユーザーの支出一覧を取得します。記録が1件もない場合は空配列を返します。
       tags:
         - Expenses
@@ -72,7 +72,7 @@ paths:
 
   /expenses:
     post:
-      summary: 新しい支出を登録
+      summary: 支出登録API
       description: 新しい支出記録を作成します
       tags:
         - Expenses
@@ -141,7 +141,7 @@ paths:
 
   /expenses/{id}:
     delete:
-      summary: 支出を削除
+      summary: 支出削除API
       description: 指定されたIDの支出記録を削除します
       tags:
         - Expenses
