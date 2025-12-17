@@ -98,3 +98,23 @@ docker push ${使用するIAMユーザーのID}.dkr.ecr.ap-northeast-1.amazonaws
 ```
 
 ### 4. aws の App Runner コンソールからデプロイ操作の続きを行う
+
+## DB マイグレーション
+
+全て、`ai-budget-app-api/migrations`ディレクトリ内で実行する。
+
+### マイグレーションファイル未作成の場合
+
+```sh
+atlas schema inspect -u "postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?search_path=public&sslmode=disable" > schema.hcl
+```
+
+### マイグレーションファイル`schema.hcl`の編集
+
+### マイグレーション実施
+
+```sh
+atlas schema apply \
+  -u "mysql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}" \
+  --to file://schema.hcl
+```
