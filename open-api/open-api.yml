@@ -73,7 +73,7 @@ paths:
   /expenses:
     post:
       summary: 支出登録API
-      description: 新しい支出記録を作成します
+      description: 新しい支出記録を作成します。複数の支出を一括で登録できます。
       tags:
         - Expenses
       requestBody:
@@ -81,14 +81,29 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/NewExpense"
+              type: object
+              required:
+                - expenses
+              properties:
+                expenses:
+                  type: array
+                  minItems: 1
+                  description: 登録する支出記録の配列
+                  items:
+                    $ref: "#/components/schemas/NewExpense"
       responses:
         "201":
           description: 支出の登録成功
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Expense"
+                type: object
+                properties:
+                  expenses:
+                    type: array
+                    description: 登録された支出記録の配列
+                    items:
+                      $ref: "#/components/schemas/Expense"
         "400":
           description: 不正なリクエスト（必須項目不足、形式不正）
           content:
