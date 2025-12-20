@@ -101,20 +101,18 @@ docker push ${使用するIAMユーザーのID}.dkr.ecr.ap-northeast-1.amazonaws
 
 ## DB マイグレーション
 
-全て、`ai-budget-app-api/migrations`ディレクトリ内で実行する。
+### 1. マイグレーションファイル`schema.sql`の編集
 
-### マイグレーションファイル未作成の場合
+### 2. マイグレーション実施
+
+#### dev 環境
 
 ```sh
-atlas schema inspect -u "postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}?search_path=public&sslmode=disable" > schema.hcl
+# 差分を見てマイグレーションファイル作成
+atlas migrate diff init --env dev
 ```
 
-### マイグレーションファイル`schema.hcl`の編集
-
-### マイグレーション実施
-
 ```sh
-atlas schema apply \
-  -u "mysql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}" \
-  --to file://schema.hcl
+# マイグレーション実行
+atlas migrate apply --env dev
 ```
