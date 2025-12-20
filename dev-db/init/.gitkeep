@@ -1,0 +1,3 @@
+# このディレクトリには初期化用のSQLスクリプトを配置できます
+# ファイル名はアルファベット順に実行されます
+# 例: 01_create_tables.sql, 02_insert_seed_data.sql

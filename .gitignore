@@ -31,3 +31,5 @@ bin/
 *.out
 vendor/
 coverage.out
+
+atlas.hcl

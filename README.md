@@ -36,6 +36,7 @@ DB_PORT=*****
 DB_USER=*****
 DB_PASSWORD=*****
 DB_NAME=*****
+DB_SSLMODE=*****
 ```
 
 **\***部分は管理者に問い合わせること
@@ -98,3 +99,27 @@ docker push ${使用するIAMユーザーのID}.dkr.ecr.ap-northeast-1.amazonaws
 ```
 
 ### 4. aws の App Runner コンソールからデプロイ操作の続きを行う
+
+## DB マイグレーション
+
+### 1. マイグレーションの元になるファイル`schema.sql`の作成
+
+### 2. atlas.hcl の作成
+
+- `atlas.hcl.sample`をもとに、`atlas.hcl`ファイルを作成し、
+  `env "dev"`の中身の、`dev`と`url`に指定された値を設定する。
+- マイグレーション対象の DB に、`atlas_dev`というデータベースを作成する。
+
+### 3. マイグレーション実施
+
+#### dev 環境
+
+```sh
+# 差分を見てマイグレーションファイル作成（initの部分は任意のマイグレーション名）
+atlas migrate diff init --env dev
+```
+
+```sh
+# マイグレーション実行
+atlas migrate apply --env dev
+```
