@@ -28,12 +28,6 @@ var serveCmd = &cobra.Command{
 			fmt.Printf("Warning: .envファイルが見つかりません。環境変数から直接読み込みます。\n")
 		}
 
-		// Firebase初期化
-		if err := AppMiddleware.InitializeFirebaseApp(); err != nil {
-			fmt.Printf("Error: Firebaseの初期化に失敗しました %v\n", err)
-			return
-		}
-
 		// DB接続確認
 		db, err := database.ConnectDB()
 		if err != nil {
@@ -50,6 +44,16 @@ var serveCmd = &cobra.Command{
 
 		// DB接続成功メッセージ
 		fmt.Println("DB接続に成功しました")
+
+		// AuthMiddlewareの初期化
+		userRepo := repository.NewUserRepository(db)
+		authMiddleware := AppMiddleware.NewAuthMiddleware(userRepo)
+
+		// Firebase初期化
+		if err := authMiddleware.InitializeFirebaseApp(); err != nil {
+			fmt.Printf("Error: Firebaseの初期化に失敗しました %v\n", err)
+			return
+		}
 
 		// echoサーバー起動
 		e := echo.New()
@@ -83,13 +87,14 @@ var serveCmd = &cobra.Command{
 			})
 		})
 
+
 		// 依存性注入
 		expenseRepo := repository.NewExpenseRepository(db)
 		expenseService := service.NewExpenseService(expenseRepo)
 		expenseHandler := handler.NewExpenseHandler(expenseService)
 
 		api := e.Group("/api")
-		api.Use(AppMiddleware.FirebaseAuth())
+		api.Use(authMiddleware.FirebaseAuth())
 
 		expenses := api.Group("/expenses")
 

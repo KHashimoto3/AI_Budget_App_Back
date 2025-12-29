@@ -8,14 +8,23 @@ import (
 	firebase "firebase.google.com/go/v4"
 	"firebase.google.com/go/v4/auth"
 	"github.com/KHashimoto3/AI_Budget_App_Back/ai-budget-app-api/internal/model"
+	"github.com/KHashimoto3/AI_Budget_App_Back/ai-budget-app-api/internal/repository"
 	"github.com/labstack/echo/v4"
 	"google.golang.org/api/option"
 )
 
 var authClient *auth.Client
 
+type AuthMiddleware struct {
+	userRepo repository.UserRepository
+}
+
+func NewAuthMiddleware(userRepo repository.UserRepository) *AuthMiddleware {
+	return &AuthMiddleware{userRepo: userRepo}
+}
+
 // SDKの初期化
-func InitializeFirebaseApp() (error) {
+func (m *AuthMiddleware) InitializeFirebaseApp() (error) {
 	ctx := context.Background()
 
 	opt := option.WithCredentialsFile("./serviceAccountKey.json")
@@ -33,7 +42,7 @@ func InitializeFirebaseApp() (error) {
 }
 
 // トークン検証ミドルウェア関数
-func FirebaseAuth() echo.MiddlewareFunc {
+func (m *AuthMiddleware) FirebaseAuth() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			// AuthorizationヘッダーからBearerトークンを取得
@@ -62,8 +71,17 @@ func FirebaseAuth() echo.MiddlewareFunc {
 				})
 			}
 
-			// ユーザー情報をコンテキストに保存
-			c.Set("userID", token.UID)
+			// FirebaseUIDを使ってユーザーIDを取得
+			userID, err := m.userRepo.GetUserIDByFirebaseUID(token.UID)
+			if err != nil {
+				return echo.NewHTTPError(401, model.ErrorResponse{
+					Error: "認証に失敗しました",
+					Details: "ユーザー情報の取得に失敗しました",
+				})
+			}
+
+			// ユーザーIDをコンテキストに保存
+			c.Set("userID", userID)
 
 			return next(c)
 		}
