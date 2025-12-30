@@ -7,7 +7,7 @@ import (
 )
 
 type ExpenseService interface {
-	CreateExpenses(expenseRequests []model.CreateExpenseRequest, userID string) ([]model.Expense, error)
+	CreateExpenses(expenseRequests []model.CreateExpenseRequest, userID string) ([]model.RegisteredExpense, error)
 }
 
 type expenseService struct {
@@ -19,7 +19,7 @@ func NewExpenseService(repo repository.ExpenseRepository) ExpenseService {
 }
 
 // CreateExpenses: 複数の支出を一括作成する
-func (s *expenseService) CreateExpenses(expenseRequests []model.CreateExpenseRequest, userID string) (resultExpenses []model.Expense, err error) {
+func (s *expenseService) CreateExpenses(expenseRequests []model.CreateExpenseRequest, userID string) (resultExpenses []model.RegisteredExpense, err error) {
 	// リクエストをモデルに変換
 	var expenses []model.Expense
 	for _, req := range expenseRequests {

@@ -6,7 +6,7 @@ import (
 )
 
 type ExpenseRepository interface {
-	CreateExpenses(expenses []model.Expense) ([]model.Expense, error)
+	CreateExpenses(expenses []model.Expense) ([]model.RegisteredExpense, error)
 }
 
 type expenseRepository struct {
@@ -18,9 +18,31 @@ func NewExpenseRepository(db *gorm.DB) ExpenseRepository {
 }
 
 // CreateExpenses: 複数の支出を一括作成する
-func (r *expenseRepository) CreateExpenses(expenses []model.Expense) (resultExpenses []model.Expense, err error) {
+func (r *expenseRepository) CreateExpenses(expenses []model.Expense) (resultExpenses []model.RegisteredExpense, err error) {
+	err = r.db.Create(&expenses).Error
+	if err != nil {
+		return nil, err
+	}
+
+	var createdExpenses []model.RegisteredExpense
+	for _, expense := range expenses {
+		createdExpense := model.RegisteredExpense {
+			ID: expense.ID,
+			ExpenseDate: expense.ExpenseDate,
+			Amount: expense.Amount,
+			GenresID: expense.GenresID,
+			ShopName: expense.ShopName,
+			Memo: expense.Memo,
+			InputType: expense.InputType,
+			ImageID: expense.ImageID,
+		}
+		createdExpenses = append(createdExpenses, createdExpense)
+	}
+
+	return createdExpenses, nil
+	
 	// トランザクション内で複数の支出を作成
-	err = r.db.Transaction(func(tx *gorm.DB) error {
+	/*err = r.db.Transaction(func(tx *gorm.DB) error {
 		return tx.Create(&expenses).Error
 	})
 
@@ -28,5 +50,5 @@ func (r *expenseRepository) CreateExpenses(expenses []model.Expense) (resultExpe
 		return nil, err
 	}
 
-	return expenses, nil
+	return expenses, nil*/
 }

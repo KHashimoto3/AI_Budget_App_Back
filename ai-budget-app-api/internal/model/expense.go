@@ -27,6 +27,17 @@ type CreateExpenseRequest struct {
 	ImageID *uuid.UUID `json:"image_id,omitempty"`
 }
 
+type RegisteredExpense struct {
+	ID uuid.UUID `json:"id"`
+	ExpenseDate Date `json:"expense_date"`
+	Amount int64 `json:"amount"`
+	GenresID uuid.UUID `json:"genres_id"`
+	ShopName string `json:"shop_name"`
+	Memo string `json:"memo"`
+	InputType string `json:"input_type"`
+	ImageID *uuid.UUID `json:"image_id,omitempty"`
+}
+
 type CreateExpenseResponse struct {
-	Expenses []Expense `json:"expenses"`
+	Expenses []RegisteredExpense `json:"expenses"`
 }
