@@ -40,15 +40,4 @@ func (r *expenseRepository) CreateExpenses(expenses []model.Expense) (resultExpe
 	}
 
 	return createdExpenses, nil
-	
-	// トランザクション内で複数の支出を作成
-	/*err = r.db.Transaction(func(tx *gorm.DB) error {
-		return tx.Create(&expenses).Error
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	return expenses, nil*/
 }
