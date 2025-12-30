@@ -8,12 +8,24 @@ import (
 	AppMiddleware "github.com/KHashimoto3/AI_Budget_App_Back/ai-budget-app-api/internal/middleware"
 	"github.com/KHashimoto3/AI_Budget_App_Back/ai-budget-app-api/internal/repository"
 	"github.com/KHashimoto3/AI_Budget_App_Back/ai-budget-app-api/internal/service"
+	"github.com/go-playground/validator/v10"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	labstackMiddleware "github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
 	"github.com/spf13/cobra"
 )
+
+type CustomValidator struct {
+	validator *validator.Validate
+}
+
+func (cv *CustomValidator) Validate(i interface{}) error {
+	if err := cv.validator.Struct(i); err != nil {
+		return err
+	}
+	return nil
+}
 
 var logLevel string
 
@@ -57,6 +69,9 @@ var serveCmd = &cobra.Command{
 
 		// echoサーバー起動
 		e := echo.New()
+
+		// バリデーター設定
+		e.Validator = &CustomValidator{validator: validator.New()}
 
 		// ログレベルの設定
 		switch logLevel {

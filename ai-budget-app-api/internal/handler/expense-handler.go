@@ -25,6 +25,23 @@ func (h *ExpenseHandler) RegisterExpenses(c echo.Context) error {
 		})
 	}
 
+	// バリデーション
+	for _, expense := range *req {
+		if err := c.Validate(expense); err != nil {
+			return c.JSON(400, model.ErrorResponse{
+				Error: "バリデーションエラーが発生しました",
+				Details: err.Error(),
+			})
+		}
+		// amountが0以下の場合のチェック（追加の安全策）
+		if expense.Amount <= 0 {
+			return c.JSON(400, model.ErrorResponse{
+				Error: "バリデーションエラーが発生しました",
+				Details: "amountは0より大きい値を指定してください",
+			})
+		}
+	}
+
 	userID, ok := c.Get("userID").(string)
 	if !ok {
 		return c.JSON(401, model.ErrorResponse{
