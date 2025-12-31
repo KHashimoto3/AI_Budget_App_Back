@@ -33,3 +33,6 @@ vendor/
 coverage.out
 
 atlas.hcl
+
+# firebase
+serviceAccountKey.json

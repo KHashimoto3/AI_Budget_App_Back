@@ -7,6 +7,7 @@
 | カラム名      | 型名      | 説明                                                    |
 | ------------- | --------- | ------------------------------------------------------- |
 | id            | UUID (PK) | ユーザー ID                                             |
+| firebase_uid  | TEXT      | Firebase UID                                            |
 | name          | VARCHAR   | ユーザー名                                              |
 | disp_name     | VARCHAR   | 表示名                                                  |
 | email         | VARCHAR   | メールアドレス（ログイン用）                            |

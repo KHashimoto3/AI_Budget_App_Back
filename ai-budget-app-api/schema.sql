@@ -3,6 +3,7 @@
 -- users
 CREATE TABLE IF NOT EXISTS public.users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    firebase_uid TEXT NOT NULL UNIQUE,
     name VARCHAR NOT NULL,
     disp_name VARCHAR NOT NULL,
     email VARCHAR NOT NULL UNIQUE,
@@ -46,6 +47,7 @@ CREATE TABLE IF NOT EXISTS public.expenses (
 );
 
 -- Indexes
+CREATE INDEX IF NOT EXISTS idx_users_firebase_uid ON public.users(firebase_uid);
 CREATE INDEX IF NOT EXISTS idx_users_email ON public.users(email);
 CREATE INDEX IF NOT EXISTS idx_expenses_user_id ON public.expenses(user_id);
 CREATE INDEX IF NOT EXISTS idx_expenses_expense_date ON public.expenses(expense_date);

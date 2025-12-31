@@ -1,16 +1,15 @@
 package database
 
 import (
-	"database/sql"
 	"fmt"
-	"net/url"
 	"os"
 	"strconv"
 
-	_ "github.com/lib/pq"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
-func ConnectDB() (*sql.DB, error) {
+func ConnectDB() (*gorm.DB, error) {
 	host := os.Getenv("DB_HOST")
 	port := os.Getenv("DB_PORT")
 	user := os.Getenv("DB_USER")
@@ -34,21 +33,25 @@ func ConnectDB() (*sql.DB, error) {
 		return nil, fmt.Errorf("無効なポート番号が指定されています: %s", port)
 	}
 
-	// パスワードをエスケープ
-	encodedPassword := url.QueryEscape(password)
+	// 接続文字列構築（GORMのPostgreSQLドライバ用）
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
+		host, port, user, password, dbname, sslmode)
 
-	// 接続文字列構築
-	dbConnStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
-        host, port, user, encodedPassword, dbname, sslmode)
-
-	db, err := sql.Open("postgres", dbConnStr)
+	// GORMでデータベースに接続
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 	// 接続エラーの場合
 	if err != nil {
 		return nil, fmt.Errorf("データベース接続時にエラーが発生しました: %v", err)
 	}
 
-	if err = db.Ping(); err != nil {
+	// 接続確認
+	sqlDB, err := db.DB()
+	if err != nil {
+		return nil, fmt.Errorf("データベースインスタンスの取得に失敗しました: %v", err)
+	}
+
+	if err = sqlDB.Ping(); err != nil {
 		return nil, fmt.Errorf("データベースへのpingに失敗しました: %v", err)
 	}
 
