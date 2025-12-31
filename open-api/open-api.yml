@@ -12,27 +12,39 @@ paths:
   /expenses/list:
     get:
       summary: 支出一覧取得API
-      description: 指定された月のユーザーの支出一覧を取得します。記録が1件もない場合は空配列を返します。
+      description: 指定された年月のユーザーの支出一覧を取得します。記録が1件もない場合は空配列を返します。
       tags:
         - Expenses
       parameters:
+        - name: year
+          in: query
+          required: true
+          description: 支出年（YYYY形式）
+          schema:
+            type: string
+            pattern: '^\d{4}$'
+            example: "2025"
         - name: month
           in: query
           required: true
-          description: 支出月（YYYY-MM形式）
+          description: 支出月（MM形式）
           schema:
             type: string
-            pattern: '^\d{4}-\d{2}$'
-            example: "2025-12"
+            pattern: '^\d{2}$'
+            example: "12"
       responses:
         "200":
           description: 支出一覧の取得成功
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Expense"
+                type: object
+                properties:
+                  expenses:
+                    type: array
+                    description: 指定されたユーザー、取引年月の支出記録の配列
+                    items:
+                      $ref: "#/components/schemas/Expense"
         "400":
           description: 不正なリクエスト（パラメータ形式が不正）
           content:
@@ -274,16 +286,6 @@ components:
           nullable: true
           description: 画像ID（OCR時のみ）
           example: "323e4567-e89b-12d3-a456-426614174003"
-        created_at:
-          type: string
-          format: date-time
-          description: 登録日時（UTC）
-          example: "2025-12-08T10:30:00Z"
-        updated_at:
-          type: string
-          format: date-time
-          description: 更新日時（UTC）
-          example: "2025-12-08T10:30:00Z"
 
     NewExpense:
       type: object

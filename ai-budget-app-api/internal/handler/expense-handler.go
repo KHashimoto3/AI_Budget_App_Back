@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"strconv"
+
 	"github.com/KHashimoto3/AI_Budget_App_Back/ai-budget-app-api/internal/model"
 	"github.com/KHashimoto3/AI_Budget_App_Back/ai-budget-app-api/internal/service"
 	"github.com/labstack/echo/v4"
@@ -42,6 +44,7 @@ func (h *ExpenseHandler) RegisterExpenses(c echo.Context) error {
 		}
 	}
 
+	// ユーザーIDをコンテキストから取得
 	userID, ok := c.Get("userID").(string)
 	if !ok {
 		return c.JSON(401, model.ErrorResponse{
@@ -64,3 +67,46 @@ func (h *ExpenseHandler) RegisterExpenses(c echo.Context) error {
 	});
 }
 
+// GetAllExpenses: 指定ユーザー、指定年月の支出一覧を取得する
+func (h *ExpenseHandler) GetAllExpenses(c echo.Context) error {
+	yearStr := c.QueryParam("year")
+	monthStr := c.QueryParam("month")
+
+	// バリデーション
+	year, err := strconv.Atoi(yearStr)
+	if err != nil || year < 1900 || year > 2100 {
+		return c.JSON(400, model.ErrorResponse{
+			Error: "バリデーションエラーが発生しました",
+			Details: "yearのパタメータが無効な値です",
+		})
+	}
+
+	month, err := strconv.Atoi(monthStr)
+	if err != nil || month < 1 || month > 12 {
+		return c.JSON(400, model.ErrorResponse{
+			Error: "バリデーションエラーが発生しました",
+			Details: "monthのパタメータが無効な値です",
+		})
+	}
+
+	// ユーザーIDをコンテキストから取得
+	userID, ok := c.Get("userID").(string)
+	if !ok {
+		return c.JSON(401, model.ErrorResponse{
+			Error: "認証に失敗しました",
+			Details: "ユーザーIDの取得に失敗しました",
+		})
+	}
+
+	expenses, err := h.service.GetAllExpenses(userID, year, month)
+	if err != nil {
+		return c.JSON(500, model.ErrorResponse{
+			Error: "サーバーエラーが発生しました。",
+			Details: err.Error(),
+		})
+	}
+
+	return c.JSON(200, model.GetExpensesResponse{
+		Expenses: expenses,
+	});
+}

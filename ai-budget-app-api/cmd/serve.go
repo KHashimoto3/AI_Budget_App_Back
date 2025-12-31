@@ -114,6 +114,8 @@ var serveCmd = &cobra.Command{
 		expenses := api.Group("/expenses")
 
 		// expenses 支出関連API
+		// 支出一覧取得API
+		expenses.GET("/list", expenseHandler.GetAllExpenses)
 		// 支出登録API
 		expenses.POST("/", expenseHandler.RegisterExpenses)
 		

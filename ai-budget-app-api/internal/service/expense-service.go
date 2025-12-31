@@ -8,6 +8,7 @@ import (
 
 type ExpenseService interface {
 	CreateExpenses(expenseRequests []model.CreateExpenseRequest, userID string) ([]model.RegisteredExpense, error)
+	GetAllExpenses(userID string, year int, month int) ([]model.RegisteredExpense, error)
 }
 
 type expenseService struct {
@@ -43,4 +44,14 @@ func (s *expenseService) CreateExpenses(expenseRequests []model.CreateExpenseReq
 	}
 
 	return resultExpenses, nil
+}
+
+// GetAllExpenses: 指定ユーザー、指定年月の支出一覧を取得する
+func (s *expenseService) GetAllExpenses(userID string, year int, month int) (expenses []model.RegisteredExpense, err error) {
+	expenses, err = s.repo.GetAllExpenses(uuid.MustParse(userID), year, month)
+	if err != nil {
+		return nil, err
+	}
+
+	return expenses, nil
 }

@@ -14,7 +14,7 @@ type Expense struct {
 	ShopName string `json:"shop_name"`
 	Memo string `json:"memo"`
 	InputType string `json:"input_type"`
-	ImageID *uuid.UUID `json:"image_id,omitempty"`
+	ImageID *uuid.UUID `json:"image_id"`
 }
 
 type CreateExpenseRequest struct {
@@ -24,7 +24,7 @@ type CreateExpenseRequest struct {
 	ShopName string `json:"shop_name" validate:"required"`
 	Memo string `json:"memo"`
 	InputType string `json:"input_type" validate:"required"`
-	ImageID *uuid.UUID `json:"image_id,omitempty"`
+	ImageID *uuid.UUID `json:"image_id"`
 }
 
 type RegisteredExpense struct {
@@ -35,9 +35,13 @@ type RegisteredExpense struct {
 	ShopName string `json:"shop_name"`
 	Memo string `json:"memo"`
 	InputType string `json:"input_type"`
-	ImageID *uuid.UUID `json:"image_id,omitempty"`
+	ImageID *uuid.UUID `json:"image_id"`
 }
 
 type CreateExpenseResponse struct {
+	Expenses []RegisteredExpense `json:"expenses"`
+}
+
+type GetExpensesResponse struct {
 	Expenses []RegisteredExpense `json:"expenses"`
 }
