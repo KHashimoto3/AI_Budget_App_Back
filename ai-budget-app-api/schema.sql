@@ -17,7 +17,6 @@ CREATE TABLE IF NOT EXISTS public.users (
 -- genres
 CREATE TABLE IF NOT EXISTS public.genres (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
     name VARCHAR NOT NULL
 );
 
@@ -53,4 +52,3 @@ CREATE INDEX IF NOT EXISTS idx_expenses_user_id ON public.expenses(user_id);
 CREATE INDEX IF NOT EXISTS idx_expenses_expense_date ON public.expenses(expense_date);
 CREATE INDEX IF NOT EXISTS idx_expenses_genres_id ON public.expenses(genres_id);
 CREATE INDEX IF NOT EXISTS idx_images_user_id ON public.images(user_id);
-CREATE INDEX IF NOT EXISTS idx_genres_user_id ON public.genres(user_id);
