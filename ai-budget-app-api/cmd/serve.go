@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/KHashimoto3/AI_Budget_App_Back/ai-budget-app-api/internal/database"
 	"github.com/KHashimoto3/AI_Budget_App_Back/ai-budget-app-api/internal/handler"
@@ -69,6 +70,24 @@ var serveCmd = &cobra.Command{
 
 		// echoサーバー起動
 		e := echo.New()
+
+		// FRONTEND_URL環境変数を取得
+		frontendURL := os.Getenv("FRONTEND_URL")
+		if frontendURL == "" {
+			fmt.Println("Warning: FRONTEND_URL環境変数が設定されていません。CORS設定をスキップします。")
+		}
+
+		// CORSミドルウェアを追加
+		e.Use(labstackMiddleware.CORSWithConfig(labstackMiddleware.CORSConfig{
+			AllowOrigins: []string{frontendURL},
+			AllowMethods: []string{echo.GET, echo.POST, echo.PUT, echo.DELETE},
+			AllowHeaders: []string{
+				echo.HeaderOrigin,
+				echo.HeaderContentType,
+				echo.HeaderAuthorization,
+			},
+			AllowCredentials: true,
+		}))
 
 		// バリデーター設定
 		e.Validator = &CustomValidator{validator: validator.New()}
