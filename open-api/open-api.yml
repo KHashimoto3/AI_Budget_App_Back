@@ -242,6 +242,120 @@ paths:
                     type: string
                     example: "サーバーエラーが発生しました"
 
+  /genres/list:
+    get:
+      summary: ジャンル一覧取得API
+      description: 全ジャンルの一覧を取得します。ジャンルが1件もない場合は空配列を返します。
+      tags:
+        - Genres
+      responses:
+        "200":
+          description: ジャンル一覧の取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  genres:
+                    type: array
+                    description: 全ジャンルの一覧
+                    items:
+                      $ref: "#/components/schemas/Genre"
+        "401":
+          description: 認証エラー（ユーザー認証に失敗）
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "認証に失敗しました"
+                  details:
+                    type: string
+                    example: "有効な認証トークンが必要です"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "サーバーエラーが発生しました"
+
+  /genres:
+    post:
+      summary: ジャンル登録API
+      description: 新しいジャンルを作成します。複数のジャンルを一括で登録できます。
+      tags:
+        - Genres
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - genres
+              properties:
+                genres:
+                  type: array
+                  minItems: 1
+                  description: 登録するジャンルの配列
+                  items:
+                    $ref: "#/components/schemas/NewGenre"
+      responses:
+        "201":
+          description: ジャンルの登録成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  genres:
+                    type: array
+                    description: 登録されたジャンルの配列
+                    items:
+                      $ref: "#/components/schemas/Genre"
+        "400":
+          description: 不正なリクエスト（必須項目不足、形式不正）
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "不正なリクエストです"
+                  details:
+                    type: string
+                    example: "必須項目が不足しています: name"
+        "401":
+          description: 認証エラー（ユーザー認証に失敗）
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "認証に失敗しました"
+                  details:
+                    type: string
+                    example: "有効な認証トークンが必要です"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "サーバーエラーが発生しました"
+
 components:
   schemas:
     Expense:
@@ -332,3 +446,27 @@ components:
           nullable: true
           description: 画像ID（OCR時のみ）
           example: "323e4567-e89b-12d3-a456-426614174003"
+
+    Genre:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: ジャンルID
+          example: "223e4567-e89b-12d3-a456-426614174002"
+        name:
+          type: string
+          description: ジャンル名
+          example: "食費"
+
+    NewGenre:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: ジャンル名
+          example: "食費"

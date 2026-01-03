@@ -127,6 +127,10 @@ var serveCmd = &cobra.Command{
 		expenseService := service.NewExpenseService(expenseRepo)
 		expenseHandler := handler.NewExpenseHandler(expenseService)
 
+		genreRepo := repository.NewGenreRepository(db)
+		genreService := service.NewGenreService(genreRepo)
+		genreHandler := handler.NewGenreHandler(genreService)
+
 		api := e.Group("/api")
 		api.Use(authMiddleware.FirebaseAuth())
 
@@ -137,6 +141,14 @@ var serveCmd = &cobra.Command{
 		expenses.GET("/list", expenseHandler.GetAllExpenses)
 		// 支出登録API
 		expenses.POST("/", expenseHandler.RegisterExpenses)
+
+		genres := api.Group("/genres")
+
+		// genres ジャンル関連API
+		// ジャンル一覧取得API
+		genres.GET("/list", genreHandler.GetAllGenres)
+		// ジャンル登録API
+		genres.POST("/", genreHandler.RegisterGenres)
 		
 
 		fmt.Println("Server started at http://localhost:8080 with log level:", logLevel)
