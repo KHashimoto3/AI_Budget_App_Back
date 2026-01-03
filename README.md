@@ -37,6 +37,15 @@ DB_USER=*****
 DB_PASSWORD=*****
 DB_NAME=*****
 DB_SSLMODE=*****
+
+# Application Configuration
+LOG_LEVEL=*****
+
+DATABASE_URL=*****
+
+FRONTEND_URL=*****
+
+GOOGLE_APPLICATION_CREDENTIALS_JSON = { ***** }
 ```
 
 **\***部分は管理者に問い合わせること

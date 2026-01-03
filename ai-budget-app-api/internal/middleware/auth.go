@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 
 	firebase "firebase.google.com/go/v4"
@@ -27,7 +28,13 @@ func NewAuthMiddleware(userRepo repository.UserRepository) *AuthMiddleware {
 func (m *AuthMiddleware) InitializeFirebaseApp() (error) {
 	ctx := context.Background()
 
-	opt := option.WithCredentialsFile("./serviceAccountKey.json")
+	credJSON := os.Getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
+	if credJSON == "" {
+		return fmt.Errorf("Firebase credentials not found in env")
+	}
+
+	opt := option.WithCredentialsJSON([]byte(credJSON))
+
 	app, err := firebase.NewApp(ctx, nil, opt)
 	if err != nil {
 		return fmt.Errorf("Firebaseアプリの初期化に失敗しました: %v", err)
@@ -45,6 +52,11 @@ func (m *AuthMiddleware) InitializeFirebaseApp() (error) {
 func (m *AuthMiddleware) FirebaseAuth() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
+			// ★ preflight は認証をスキップ
+			if c.Request().Method == echo.OPTIONS {
+				return c.NoContent(204)
+			}
+
 			// AuthorizationヘッダーからBearerトークンを取得
 			authHeader := c.Request().Header.Get("Authorization")
 			if authHeader == "" {

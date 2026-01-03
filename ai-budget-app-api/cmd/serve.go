@@ -80,7 +80,7 @@ var serveCmd = &cobra.Command{
 		// CORSミドルウェアを追加
 		e.Use(labstackMiddleware.CORSWithConfig(labstackMiddleware.CORSConfig{
 			AllowOrigins: []string{frontendURL},
-			AllowMethods: []string{echo.GET, echo.POST, echo.PUT, echo.DELETE},
+			AllowMethods: []string{echo.GET, echo.POST, echo.PUT, echo.DELETE, echo.OPTIONS},
 			AllowHeaders: []string{
 				echo.HeaderOrigin,
 				echo.HeaderContentType,
