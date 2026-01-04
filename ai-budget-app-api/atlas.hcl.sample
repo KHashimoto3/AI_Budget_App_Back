@@ -1,0 +1,23 @@
+env "dev" {
+  src = "file://schema.sql"
+  
+  # devとurlにpostgresのurlを入れてください
+  dev = *****
+  url = *****
+  
+  migration {
+    dir = "file://migrations"
+  }
+}
+
+env "prod" {
+  src = "file://schema.sql"
+
+  # devとurlにpostgresのurlを入れてください
+  dev = *****
+  url = *****
+
+  migration {
+    dir = "file://migrations/prd"
+  }
+}

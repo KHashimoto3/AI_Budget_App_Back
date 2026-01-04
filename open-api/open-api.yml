@@ -1,96 +1,472 @@
-openapi: "3.0"
+openapi: "3.0.0"
 info:
-  title: Sample User API
-  description: ユーザーの取得・作成ができるAPIのサンプル
+  title: AI Budget API
+  description: AI家計簿アプリのバックエンドAPIドキュメントです。<br>ユーザーIDに紐づいたAPIエンドポイントを呼ぶ場合、AuthorizationヘッダーにBearerトークンを含める必要があります。
   version: 1.0.0
 
 servers:
-  - url: http://localhost:3000/api
+  - url: http://localhost:8080/api
     description: ローカル開発環境
 
 paths:
-  /users:
+  /expenses/list:
     get:
-      summary: ユーザー一覧を取得
+      summary: 支出一覧取得API
+      description: 指定された年月のユーザーの支出一覧を取得します。記録が1件もない場合は空配列を返します。
       tags:
-        - Users
+        - Expenses
+      parameters:
+        - name: year
+          in: query
+          required: true
+          description: 支出年（YYYY形式）
+          schema:
+            type: string
+            pattern: '^\d{4}$'
+            example: "2025"
+        - name: month
+          in: query
+          required: true
+          description: 支出月（MM形式）
+          schema:
+            type: string
+            pattern: '^\d{2}$'
+            example: "12"
       responses:
         "200":
-          description: ユーザー一覧の取得成功
+          description: 支出一覧の取得成功
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/User"
+                type: object
+                properties:
+                  expenses:
+                    type: array
+                    description: 指定されたユーザー、取引年月の支出記録の配列
+                    items:
+                      $ref: "#/components/schemas/Expense"
+        "400":
+          description: 不正なリクエスト（パラメータ形式が不正）
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "不正なリクエストです"
+                  details:
+                    type: string
+                    example: "month パラメータは YYYY-MM 形式で指定してください"
+        "403":
+          description: 認証エラー（ユーザー認証に失敗）
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "認証に失敗しました"
+                  details:
+                    type: string
+                    example: "有効な認証トークンが必要です"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "サーバーエラーが発生しました"
+
+  /expenses:
     post:
-      summary: 新しいユーザーを作成
+      summary: 支出登録API
+      description: 新しい支出記録を作成します。複数の支出を一括で登録できます。
       tags:
-        - Users
+        - Expenses
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/NewUser"
+              type: object
+              required:
+                - expenses
+              properties:
+                expenses:
+                  type: array
+                  minItems: 1
+                  description: 登録する支出記録の配列
+                  items:
+                    $ref: "#/components/schemas/NewExpense"
       responses:
         "201":
-          description: ユーザーの作成成功
+          description: 支出の登録成功
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
+                type: object
+                properties:
+                  expenses:
+                    type: array
+                    description: 登録された支出記録の配列
+                    items:
+                      $ref: "#/components/schemas/Expense"
         "400":
-          description: 不正なリクエスト
+          description: 不正なリクエスト（必須項目不足、形式不正）
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "不正なリクエストです"
+                  details:
+                    type: string
+                    example: "必須項目が不足しています: expense_date, amount"
+        "403":
+          description: 認証エラー（ユーザー認証に失敗）
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "認証に失敗しました"
+                  details:
+                    type: string
+                    example: "有効な認証トークンが必要です"
+        "404":
+          description: 指定されたジャンルが見つからない
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "ジャンルが見つかりません"
+                  details:
+                    type: string
+                    example: "指定されたgenres_idのジャンルが存在しません"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "サーバーエラーが発生しました"
 
-  /users/{id}:
-    get:
-      summary: 特定のユーザーを取得
+  /expenses/{id}:
+    delete:
+      summary: 支出削除API
+      description: 指定されたIDの支出記録を削除します
       tags:
-        - Users
+        - Expenses
       parameters:
         - name: id
           in: path
           required: true
-          description: ユーザーID
+          description: 支出記録のID
           schema:
-            type: integer
+            type: string
+            format: uuid
+            example: "123e4567-e89b-12d3-a456-426614174001"
       responses:
         "200":
-          description: ユーザー情報の取得成功
+          description: 支出の削除成功
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "支出記録を削除しました"
+        "400":
+          description: 不正なリクエスト（ID形式が不正）
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "不正なリクエストです"
+                  details:
+                    type: string
+                    example: "ID の形式が不正です"
+        "403":
+          description: 認証エラー（ユーザー認証に失敗）
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "認証に失敗しました"
+                  details:
+                    type: string
+                    example: "有効な認証トークンが必要です"
         "404":
-          description: ユーザーが見つからない
+          description: 指定された支出記録が見つからない
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "支出記録が見つかりません"
+                  details:
+                    type: string
+                    example: "指定されたIDの支出記録が存在しません"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "サーバーエラーが発生しました"
+
+  /genres/list:
+    get:
+      summary: ジャンル一覧取得API
+      description: 全ジャンルの一覧を取得します。ジャンルが1件もない場合は空配列を返します。
+      tags:
+        - Genres
+      responses:
+        "200":
+          description: ジャンル一覧の取得成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  genres:
+                    type: array
+                    description: 全ジャンルの一覧
+                    items:
+                      $ref: "#/components/schemas/Genre"
+        "401":
+          description: 認証エラー（ユーザー認証に失敗）
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "認証に失敗しました"
+                  details:
+                    type: string
+                    example: "有効な認証トークンが必要です"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "サーバーエラーが発生しました"
+
+  /genres:
+    post:
+      summary: ジャンル登録API
+      description: 新しいジャンルを作成します。複数のジャンルを一括で登録できます。
+      tags:
+        - Genres
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - genres
+              properties:
+                genres:
+                  type: array
+                  minItems: 1
+                  description: 登録するジャンルの配列
+                  items:
+                    $ref: "#/components/schemas/NewGenre"
+      responses:
+        "201":
+          description: ジャンルの登録成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  genres:
+                    type: array
+                    description: 登録されたジャンルの配列
+                    items:
+                      $ref: "#/components/schemas/Genre"
+        "400":
+          description: 不正なリクエスト（必須項目不足、形式不正）
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "不正なリクエストです"
+                  details:
+                    type: string
+                    example: "必須項目が不足しています: name"
+        "401":
+          description: 認証エラー（ユーザー認証に失敗）
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "認証に失敗しました"
+                  details:
+                    type: string
+                    example: "有効な認証トークンが必要です"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "サーバーエラーが発生しました"
 
 components:
   schemas:
-    User:
+    Expense:
       type: object
       properties:
         id:
+          type: string
+          format: uuid
+          description: 支出ID
+          example: "123e4567-e89b-12d3-a456-426614174001"
+        expense_date:
+          type: string
+          format: date
+          description: 支出日（UTC）
+          example: "2025-12-08"
+        amount:
           type: integer
-          example: 1
+          description: 金額（円）
+          example: 1500
+        genres_id:
+          type: string
+          format: uuid
+          description: ジャンルID
+          example: "223e4567-e89b-12d3-a456-426614174002"
+        shop_name:
+          type: string
+          description: お店の名前
+          example: "スーパーコーヒー"
+        memo:
+          type: string
+          nullable: true
+          description: メモ
+          example: "同僚とのミーティング"
+        input_type:
+          type: string
+          enum: [manual, ocr]
+          description: 入力形式
+          example: "manual"
+        image_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: 画像ID（OCR時のみ）
+          example: "323e4567-e89b-12d3-a456-426614174003"
+
+    NewExpense:
+      type: object
+      required:
+        - expense_date
+        - amount
+        - genres_id
+        - shop_name
+        - input_type
+      properties:
+        expense_date:
+          type: string
+          format: date
+          description: 支出日（UTC）
+          example: "2025-12-08"
+        amount:
+          type: integer
+          minimum: 1
+          description: 金額（円）
+          example: 1500
+        genres_id:
+          type: string
+          format: uuid
+          description: ジャンルID
+          example: "223e4567-e89b-12d3-a456-426614174002"
+        shop_name:
+          type: string
+          minLength: 1
+          description: お店の名前
+          example: "スーパーコーヒー"
+        memo:
+          type: string
+          nullable: true
+          description: メモ
+          example: "同僚とのミーティング"
+        input_type:
+          type: string
+          enum: [manual, ocr]
+          description: 入力形式
+          example: "manual"
+        image_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: 画像ID（OCR時のみ）
+          example: "323e4567-e89b-12d3-a456-426614174003"
+
+    Genre:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: ジャンルID
+          example: "223e4567-e89b-12d3-a456-426614174002"
         name:
           type: string
-          example: 山田 太郎
-        email:
-          type: string
-          format: email
-          example: yamada@example.com
+          description: ジャンル名
+          example: "食費"
 
-    NewUser:
+    NewGenre:
       type: object
       required:
         - name
-        - email
       properties:
         name:
           type: string
-          example: 田中 花子
-        email:
-          type: string
-          format: email
-          example: tanaka@example.com
+          minLength: 1
+          description: ジャンル名
+          example: "食費"

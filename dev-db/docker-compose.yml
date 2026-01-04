@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: ai-budget-dev-db
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    environment:
+      POSTGRES_USER: ${DB_USER:-aibudget}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-aibudget_dev_password}
+      POSTGRES_DB: ${DB_NAME:-ai_budget_db}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --locale=C"
+      TZ: Asia/Tokyo
+    volumes:
+      # データの永続化
+      - postgres_data:/var/lib/postgresql/data
+      # 初期化スクリプト（オプション）
+      - ./init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-aibudget} -d ${DB_NAME:-ai_budget_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - dev-network
+
+networks:
+  dev-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
