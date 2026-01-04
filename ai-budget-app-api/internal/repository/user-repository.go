@@ -6,7 +6,9 @@ import (
 )
 
 type UserRepository interface {
-GetUserIDByFirebaseUID(firebaseUID string) (string, error)
+	GetUserIDByFirebaseUID(firebaseUID string) (string, error)
+	IsExistingUser(firebaseUID string) (bool, error)
+	CreateUserByFirebaseUID(user model.User) (createdUser model.RegisteredGoogleLoginUser, err error)
 }
 
 type userRepository struct {
@@ -27,4 +29,32 @@ func (r *userRepository) GetUserIDByFirebaseUID(firebaseUID string) (userID stri
 	}
 
 	return user.ID.String(), nil
+}
+
+// IsExistingUser: 指定されたFirebaseUIDのユーザーが存在するか確認する
+func (r *userRepository) IsExistingUser(firebaseUID string) (bool, error) {
+	var count int64
+	err := r.db.Model(&model.User{}).Where("firebase_uid = ?", firebaseUID).Count(&count).Error
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
+}
+
+// CreateUserByFirebaseUID: FirebaseUIDで新しいユーザーを作成する
+func (r *userRepository) CreateUserByFirebaseUID(user model.User) (createdUser model.RegisteredGoogleLoginUser, err error) {
+	err = r.db.Create(&user).Error
+	if err != nil {
+		return model.RegisteredGoogleLoginUser{}, err
+	}
+
+	createdUser = model.RegisteredGoogleLoginUser{
+		FirebaseUID: user.FirebaseUID,
+		Name: user.Name,
+		DispName: user.DispName,
+		Email: user.Email,
+	}
+
+	return createdUser, nil
 }
