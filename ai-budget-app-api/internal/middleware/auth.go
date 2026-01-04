@@ -10,6 +10,7 @@ import (
 	"firebase.google.com/go/v4/auth"
 	"github.com/KHashimoto3/AI_Budget_App_Back/ai-budget-app-api/internal/model"
 	"github.com/KHashimoto3/AI_Budget_App_Back/ai-budget-app-api/internal/repository"
+	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"google.golang.org/api/option"
 )
@@ -81,6 +82,39 @@ func (m *AuthMiddleware) FirebaseAuth() echo.MiddlewareFunc {
 					Error: "認証に失敗しました",
 					Details: "有効な認証トークンが必要です",
 				})
+			}
+
+			// ログインしたFirebaseUIDが存在するかを確認
+			exists, err := m.userRepo.IsExistingUser(token.UID)
+			if err != nil {
+				return echo.NewHTTPError(500, model.ErrorResponse{
+					Error: "サーバーエラーが発生しました",
+					Details: err.Error(),
+				})
+			}
+			// DBに、今のログインユーザーが存在しなければ、名前とメールアドレスを取得して新規ユーザーを作成
+			if !exists {
+				// Firebaseからユーザー情報を取得
+				email, _ := token.Claims["email"].(string)
+    			name, _ := token.Claims["name"].(string)
+
+				newUser := model.User{
+					ID: uuid.New(),
+					FirebaseUID: token.UID,
+					Name:        name,
+					DispName:    name,
+					Email:       email,
+					PasswordHash: "none",
+					AccountType: 1,
+				}
+
+				_, err = m.userRepo.CreateUserByFirebaseUID(newUser)
+				if err != nil {
+					return echo.NewHTTPError(500, model.ErrorResponse{
+						Error: "サーバーエラーが発生しました",
+						Details: err.Error(),
+					})
+				}
 			}
 
 			// FirebaseUIDを使ってユーザーIDを取得
